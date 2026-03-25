@@ -67,28 +67,33 @@ TRUE_LABELS = [
     "negative",  # "I am not happy about this"
 ]
 
-# TODO: Add 5-10 more posts and labels.
-#
-# Requirements:
-#   - For every new post you add to SAMPLE_POSTS, you must add one
-#     matching label to TRUE_LABELS.
-#   - SAMPLE_POSTS and TRUE_LABELS must always have the same length.
-#   - Include a variety of language styles, such as:
-#       * Slang ("lowkey", "highkey", "no cap")
-#       * Emojis (":)", ":(", "🥲", "😂", "💀")
-#       * Sarcasm ("I absolutely love getting stuck in traffic")
-#       * Ambiguous or mixed feelings
-#
-# Tips:
-#   - Try to create some examples that are hard to label even for you.
-#   - Make a note of any examples that you and a friend might disagree on.
-#     Those "edge cases" are interesting to inspect for both the rule based
-#     and ML models.
-#
-# Example of how you might extend the lists:
-#
-# SAMPLE_POSTS.append("Lowkey stressed but kind of proud of myself")
-# TRUE_LABELS.append("mixed")
-#
-# Remember to keep them aligned:
-#   len(SAMPLE_POSTS) == len(TRUE_LABELS)
+# --- Additional posts and labels ---
+SAMPLE_POSTS += [
+    "Lowkey stressed but kind of proud of myself",
+    "I absolutely love when my wifi cuts out mid-call",
+    "just found a $20 in my old jacket 😂",
+    "cant believe i have to do this again 💀",
+    "It is what it is",
+    "no cap this was the best meal of my life",
+    "im fine. totally fine. everything is fine :)",
+    "tired but we keep going I guess 🥲",
+    "highkey obsessed with this new song",
+    "woke up late, spilled my coffee, missed the bus",
+]
+
+TRUE_LABELS += [
+    "mixed",     # "Lowkey stressed but kind of proud of myself"
+    "negative",  # "I absolutely love when my wifi cuts out mid-call"
+    "positive",  # "just found a $20 in my old jacket 😂"
+    "negative",  # "cant believe i have to do this again 💀"
+    "neutral",   # "It is what it is"
+    "positive",  # "no cap this was the best meal of my life"
+    "mixed",     # "im fine. totally fine. everything is fine :)"
+    "mixed",     # "tired but we keep going I guess 🥲"
+    "positive",  # "highkey obsessed with this new song"
+    "negative",  # "woke up late, spilled my coffee, missed the bus"
+]
+
+assert len(SAMPLE_POSTS) == len(TRUE_LABELS), (
+    f"Mismatched dataset: {len(SAMPLE_POSTS)} posts vs {len(TRUE_LABELS)} labels"
+)
