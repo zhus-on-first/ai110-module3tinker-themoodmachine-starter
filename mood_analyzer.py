@@ -8,6 +8,7 @@ This class starts with very simple logic:
   - Compute a numeric score
   - Convert that score into a mood label
 """
+import string
 
 from typing import List, Dict, Tuple, Optional
 
@@ -32,6 +33,17 @@ class MoodAnalyzer:
         self.positive_words = set(w.lower() for w in positive_words)
         self.negative_words = set(w.lower() for w in negative_words)
 
+        # Starter mapping of emojis to words.
+        self.EMOJI_MAP = {
+              "😂": "funny",
+              "🥲": "sad",
+              "💀": "exhausted",
+              ":)": "happy",
+              ":-)": "happy",
+              ":(": "sad",
+              ":-(": "sad",
+        }
+
     # ---------------------------------------------------------------------
     # Preprocessing
     # ---------------------------------------------------------------------
@@ -46,13 +58,18 @@ class MoodAnalyzer:
           - Strips leading and trailing whitespace
           - Converts everything to lowercase
           - Splits on spaces
-
-        Ideas to improve:
           - Remove punctuation
           - Handle simple emojis separately (":)", ":-(", "🥲", "😂")
+
+        Ideas to improve:
+          - Handle more emojis and slang (for example "lol" or "sigh" or "smh")
           - Normalize repeated characters ("soooo" -> "soo")
         """
-        cleaned = text.strip().lower()
+
+        for emoji, replacement in self.EMOJI_MAP.items():
+            text = text.replace(emoji, f" {replacement} ")
+
+        cleaned = text.strip().lower().translate(str.maketrans("", "", ".,!?;:\"()"))
         tokens = cleaned.split()
 
         return tokens
@@ -61,29 +78,53 @@ class MoodAnalyzer:
     # Scoring logic
     # ---------------------------------------------------------------------
 
+    # Words that flip the sentiment of the next word.
+    NEGATORS = {"not", "never", "no"}
+
     def score_text(self, text: str) -> int:
         """
         Compute a numeric "mood score" for the given text.
 
-        Positive words increase the score.
-        Negative words decrease the score.
+        Positive words increase the score; negative words decrease it.
+        Enhancement: simple negation — "not happy" scores -1, "not bad" scores +1.
 
-        TODO: You must choose AT LEAST ONE modeling improvement to implement.
-        For example:
-          - Handle simple negation such as "not happy" or "not bad"
-          - Count how many times each word appears instead of just presence
-          - Give some words higher weights than others (for example "hate" < "annoyed")
-          - Treat emojis or slang (":)", "lol", "💀") as strong signals
+        See the alternative implementations below for a readability comparison.
         """
-        # TODO: Implement this method.
-        #   1. Call self.preprocess(text) to get tokens.
-        #   2. Loop over the tokens.
-        #   3. Increase the score for positive words, decrease for negative words.
-        #   4. Return the total score.
-        #
-        # Hint: if you implement negation, you may want to look at pairs of tokens,
-        # like ("not", "happy") or ("never", "fun").
-        pass
+        # --- Version A: Simple baseline (most readable, no negation) ----------
+        tokens = self.preprocess(text)
+        score = 0
+        for token in tokens:
+            if token in self.positive_words:
+                score += 1
+            elif token in self.negative_words:
+                score -= 1
+        return score
+        # Correctness gap: "not happy" → +1 (wrong; expected -1)
+
+        # --- Version B: Negation via index ------------
+        # Readable because the index makes "look at the previous word" explicit.
+        # tokens = self.preprocess(text)
+        # score = 0
+        # for i, token in enumerate(tokens):
+        #     multiplier = -1 if i > 0 and tokens[i - 1] in self.NEGATORS else 1
+        #     if token in self.positive_words:
+        #         score += multiplier
+        #     elif token in self.negative_words:
+        #         score -= multiplier
+        # return score
+
+        # --- Version C: Negation via bigram zip (idiomatic Python) ------------
+        # Concise, but requires familiarity with the zip sliding-window pattern.
+        # Correctness is identical to Version B.
+        # tokens = self.preprocess(text)
+        # score = 0
+        # for prev, curr in zip([""] + tokens[:-1], tokens):
+        #     multiplier = -1 if prev in self.NEGATORS else 1
+        #     if curr in self.positive_words:
+        #         score += multiplier
+        #     elif curr in self.negative_words:
+        #         score -= multiplier
+        # return score
 
     # ---------------------------------------------------------------------
     # Label prediction
@@ -105,12 +146,12 @@ class MoodAnalyzer:
         Just remember that whatever labels you return should match the labels
         you use in TRUE_LABELS in dataset.py if you care about accuracy.
         """
-        # TODO: Implement this method.
-        #   1. Call self.score_text(text) to get the numeric score.
-        #   2. Return "positive" if the score is above 0.
-        #   3. Return "negative" if the score is below 0.
-        #   4. Return "neutral" otherwise.
-        pass
+        score = self.score_text(text)
+        if score > 0:
+            return "positive"
+        if score < 0:
+            return "negative"
+        return "neutral"
 
     # ---------------------------------------------------------------------
     # Explanations (optional but recommended)
